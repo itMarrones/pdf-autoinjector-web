@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Servicio del backend Node.js
+  backend:
+    build: ./backend                    # Construye la imagen desde la carpeta backend
+    container_name: pdf-backend         # Nombre del contenedor
+    ports:
+      - "4000:4000"                     # Expone el puerto 4000
+    volumes:
+      - ./backend/uploads:/app/uploads     # Monta volumen para archivos subidos
+      - ./backend/generated:/app/generated # Monta volumen para PDFs generados
+    restart: always                     # Reinicia el contenedor siempre
+    depends_on:
+      - db                              # Espera a que la base de datos esté lista
+    environment:
+      - DB_HOST=db                      # Configuración de conexión a MySQL
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=pdfauto
+
+  # Servicio frontend con Nginx
+  frontend:
+    image: nginx:latest                 # Usa la última imagen de Nginx
+    container_name: pdf-frontend
+    ports:
+      - "80:80"                         # Sirve la web en el puerto 80
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro # Monta el frontend como solo lectura
+    restart: always
+
+  # Servicio de base de datos MySQL
+  db:
+    image: mysql:8.0                    # Imagen de MySQL versión 8
+    container_name: pdf-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root         # Contraseña de root
+      MYSQL_DATABASE: pdfauto           # Crea automáticamente esta base de datos
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Script de inicialización
+    ports:
+      - "3306:3306"                     # Puerto para conexión directa (opcional)
+
+  # Interfaz gráfica para la base de datos
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"                       # Acceso vía navegador en http://localhost:8081
+    environment:
+      PMA_HOST: db                      # Conecta al servicio 'db'
+      PMA_USER: root
+      PMA_PASSWORD: root
