@@ -1,5 +1,6 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const secretKey = 'pASsW0rD123!'; // Clave secreta para firmar/verificar tokens JWT
+const jwtSecret = process.env.JWT_SECRET; // Clave secreta para firmar/verificar tokens JWT
 
 // Middleware para verificar si el usuario envió un token válido
 exports.authRequired = (req, res, next) => {
@@ -15,7 +16,7 @@ exports.authRequired = (req, res, next) => {
 
   try {
     // Verificamos el token y lo decodificamos
-    const userData = jwt.verify(token, secretKey);
+    const userData = jwt.verify(token, jwtSecret);
     req.user = userData; // Guardamos los datos del usuario en la request
     next(); // Continuamos con la siguiente función middleware o ruta
   } catch (err) {

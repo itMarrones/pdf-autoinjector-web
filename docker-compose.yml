@@ -13,11 +13,8 @@ services:
     restart: always                     # Reinicia el contenedor siempre
     depends_on:
       - db                              # Espera a que la base de datos esté lista
-    environment:
-      - DB_HOST=db                      # Configuración de conexión a MySQL
-      - DB_USER=root
-      - DB_PASSWORD=root
-      - DB_NAME=pdfauto
+    env_file:
+      - ./backend/.env
 
   # Servicio frontend con Nginx
   frontend:
