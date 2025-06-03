@@ -58,7 +58,7 @@ PDF-AUTOINJECTOR-WEB/
 
 ```bash
 # Clonar el repositorio
-git clone <REPO_URL>
+git clone https://github.com/itMarrones/pdf-autoinjector-web
 cd PDF-AUTOINJECTOR-WEB
 
 # Iniciar todos los servicios
