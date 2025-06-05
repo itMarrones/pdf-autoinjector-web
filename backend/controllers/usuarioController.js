@@ -1,47 +1,44 @@
+// Este controlador gestiona el inicio de sesión de los usuarios.
+// Recibe las credenciales, valida el usuario y la contraseña,
+// genera un token JWT si son correctos y responde con los datos necesarios para el frontend.
+
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const pool = require('../db');
-
-// Clave secreta para firmar los tokens JWT (mejor usar variable de entorno)
-const secretKey = 'pASsW0rD123!';
+const { generateToken } = require('../utils/jwtUtils');
+const { findUserByEmail, findUserByUsuario } = require('../services/userService');
 
 // Controlador para el login de usuario
 exports.login = async (req, res) => {
-  const { email, contrasenya } = req.body; // Extrae los datos del cuerpo de la solicitud
+  // === 1. Extraer datos del cuerpo de la solicitud ===
+  const { usuario, contrasenya } = req.body;
 
   try {
-    // Busca el usuario en la base de datos por email
-    const [rows] = await pool.execute('SELECT * FROM usuarios WHERE email = ?', [email]);
+    // === 2. Buscar usuario por nombre de usuario ===
+    const user = await findUserByUsuario(usuario);
 
-    if (rows.length === 0) {
-      return res.status(401).json({ success: false, error: 'Usuario no encontrado' });
-    }
+    // === 3. Validar existencia del usuario ===
+    if (!user) return res.status(401).json({ success: false, error: 'Usuario no encontrado' });
 
-    const usuario = rows[0];
-
+    // === 4. Validar contraseña ===
     // Compara la contraseña introducida con la almacenada en la base de datos
-    const esCorrecta = await bcrypt.compare(contrasenya, usuario.contrasenya);
-    if (!esCorrecta) {
-      return res.status(401).json({ success: false, error: 'Contraseña incorrecta' });
-    }
+    const esCorrecta = await bcrypt.compare(contrasenya, user.contrasenya);
+    if (!esCorrecta) return res.status(401).json({ success: false, error: 'Contraseña incorrecta' });
 
+    // === 5. Generar token JWT ===
     // Genera un token JWT con la información del usuario (válido por 2 horas)
-    const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, rol: usuario.rol },
-      secretKey,
-      { expiresIn: '2h' }
+    const token = generateToken(
+      { id: user.id, email: user.email, rol: user.rol }
     );
 
-    // Devuelve una respuesta con el token, nombre y rol del usuario
+    // === 6. Responder con los datos del usuario y el token ===
     res.json({
       success: true,
       token,
-      nom: usuario.nom,
-      rol: usuario.rol
+      nom: user.nom,
+      rol: user.rol
     });
-
   } catch (err) {
+    // === 7. Manejo de errores ===
     // Captura errores y responde con mensaje de error
     res.status(500).json({ success: false, error: err.message });
   }

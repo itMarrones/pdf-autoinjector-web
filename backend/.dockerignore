@@ -1,0 +1,5 @@
+# .dockerignore
+# Evita que Docker copie la carpeta node_modules y archivos de log al crear la imagen
+
+node_modules
+npm-debug.log

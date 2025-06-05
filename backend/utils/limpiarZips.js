@@ -1,3 +1,6 @@
+// utils/limpiarZips.js
+// Elimina archivos ZIP y carpetas temporales de la carpeta 'generated' que tengan más de 15 días.
+
 const fs = require('fs');
 const path = require('path');
 const dayjs = require('dayjs');
@@ -9,9 +12,10 @@ const MAX_DIAS = 15; // Máximo de días antes de eliminar archivos
 function eliminarZipsAntiguos() {
   const ahora = dayjs();
 
-  // Si la carpeta no existe, salimos
+  // === 1. Comprobar si la carpeta existe ===
   if (!fs.existsSync(carpeta)) return;
 
+  // === 2. Leer todos los archivos y carpetas dentro de 'generated' ===
   const archivos = fs.readdirSync(carpeta);
 
   archivos.forEach(nombre => {
@@ -20,6 +24,7 @@ function eliminarZipsAntiguos() {
     const fechaCreacion = dayjs(stats.birthtime);
     const diasPasados = ahora.diff(fechaCreacion, 'day');
 
+    // === 3. Si el archivo/carpeta es antiguo, eliminarlo ===
     if (diasPasados > MAX_DIAS) {
       // Si es un archivo ZIP, lo eliminamos
       if (nombre.endsWith('.zip')) {

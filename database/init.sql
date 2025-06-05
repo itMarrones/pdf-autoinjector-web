@@ -1,3 +1,6 @@
+-- init.sql
+-- Script de inicialización de la base de datos de usuarios.
+
 -- Elimina la tabla de usuarios si ya existe
 DROP TABLE IF EXISTS usuarios;
 
